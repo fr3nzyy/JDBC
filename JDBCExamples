@@ -1,0 +1,65 @@
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Properties;
+ 
+/** @author mutagen */
+public class JDBCExamples {
+ 
+    public static void main(String[] args) throws Exception {
+
+        loadDriver("com.mysql.jdbc.Driver");
+        Connection connMysql = DriverManager.getConnection("jdbc:mysql://localhost:3306/article", "user", "user"); 
+ 
+//        создадим таблицу
+        String createTable = "create table IF NOT EXISTS Phones (ID INT, NAME VARCHAR(50), PNumber INT);";
+        Statement stH2 = connMysql.createStatement();
+        stH2.execute(createTable);
+  
+//        наполним данными
+        String[] insert = {"DELETE FROM Phones;", "insert into Phones (id, name, pnumber) values (1, 'Petrov', 3215);",
+            "insert into Phones (id, name, pnumber) values (2, 'Sidorov', 6465);",
+            "insert into Phones (id, name, pnumber) values (3, 'Aleksandrov', 1236);"};
+        for (String sql : insert) {
+            stH2.execute(sql);
+        }
+        System.out.println();
+ 
+//        посмотрим что там осталось
+        String select = "select * from Phones;";
+        ResultSet rs = stH2.executeQuery(select);
+        System.out.println("БАЗА:");
+        while (rs.next()) {
+            System.out.println(rs.getInt(1) + " " + rs.getString(2) + " " + rs.getInt(3));
+        }
+     }
+     /**
+     * @param db строка для соединения с базой в формате JDBC
+     * @param props параметры для драйвера, такие как пользователь, пароль, порт и тд
+     * @return соединение с БД
+     * @throws SQLException
+     */
+    public static Connection getConnection(String db, Properties props) throws SQLException {
+        Connection conn = DriverManager.getConnection(db, props);
+        System.out.println(conn);
+        return conn;
+    }
+ 
+    /**
+     * Загружает JDBC драйвер по имени. 
+     * На самом деле это лишнее для всех современных БД. Вызывать loadDriver - НЕ обязательно
+     * @param driverFullName полное имя класса в котором реализован интерфейс вызова Driver для JDBC
+     * @return загруженный класс
+     * @throws ClassNotFoundException
+     */
+    public static Class loadDriver(String driverFullName) throws ClassNotFoundException {
+        Class c = Class.forName(driverFullName);
+        //System.out.println(c);
+        return c;
+    }
+}
